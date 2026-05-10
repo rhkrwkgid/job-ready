@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>중장년 취업준비 상태 진단</title>
+<style>
+  :root {
+    --navy:       #1A2E4A;
+    --navy-mid:   #2C4A6E;
+    --navy-light: #E8EEF5;
+    --orange:     #D4621A;
+    --orange-l:   #FAF0E8;
+    --green:      #2D6A4F;
+    --green-l:    #E4F2EB;
+    --red:        #C0392B;
+    --red-l:      #FDECEA;
+    --gold:       #E8A020;
+    --bg:         #FAF7F2;
+    --card:       #FFFFFF;
+    --border:     #E0D8CF;
+    --text:       #1A1A1A;
+    --muted:      #777777;
+    --gray-l:     #F4F2EE;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body {
+    font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
+    background:var(--bg); color:var(--text);
+    min-height:100vh; padding-bottom:60px;
+  }
+
+  /* ── 헤더 ─────────────────────────────────────── */
+  .hero {
+    background:var(--navy);
+    padding:36px 32px 28px;
+    position:relative; overflow:hidden;
+  }
+  .hero::before {
+    content:''; position:absolute;
+    right:-60px; top:-60px;
+    width:260px; height:260px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.03);
+  }
+  .hero::after {
+    content:''; position:absolute;
+    right:80px; bottom:-80px;
+    width:180px; height:180px;
+    border-radius:50%;
+    background:rgba(212,98,26,0.12);
+  }
+  .hero-tag  { font-size:13px; letter-spacing:4px; color:#8AAAC8; margin-bottom:8px; }
+  .hero-title{ font-size:28px; font-weight:700; color:#fff; line-height:1.35; margin-bottom:4px; }
+  .hero-sub  { font-size:15px; color:#8AAAC8; margin-bottom:24px; }
+
+  /* ── 전체 진행률 ──────────────────────────────── */
+  .progress-wrap {
+    background:rgba(255,255,255,0.07);
+    border-radius:10px; padding:16px 20px;
+    position:relative; z-index:1;
+  }
+  .progress-top { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px; }
+  .progress-label{ font-size:14px; color:#AABBCC; }
+  .progress-pct  { font-size:30px; font-weight:700; color:var(--gold); transition:all .3s; }
+  .progress-bar-bg{ height:8px; background:rgba(255,255,255,0.1); border-radius:99px; overflow:hidden; }
+  .progress-bar-fill{ height:100%; background:var(--gold); border-radius:99px; transition:width .5s cubic-bezier(.4,0,.2,1); width:0%; }
+  .progress-sub  { display:flex; gap:16px; margin-top:8px; }
+  .progress-sub span{ font-size:14px; color:#8AAAC8; }
+  .progress-sub strong{ color:#fff; }
+
+  /* ── 진단 단계 배너 ───────────────────────────── */
+  .stage-banner {
+    display:none;
+    margin:0 20px;
+    border-radius:0 0 10px 10px;
+    padding:10px 20px;
+    font-size:15px; font-weight:700;
+    text-align:center;
+    transition:all .3s;
+  }
+  .stage-banner.show { display:block; }
+  .stage-0 { background:#EEF2F8; color:var(--navy-mid); }
+  .stage-1 { background:#FFF5EA; color:#B04010; }
+  .stage-2 { background:#FFF9E0; color:#8B6000; }
+  .stage-3 { background:#E8F5EE; color:var(--green); }
+  .stage-4 { background:var(--green); color:#fff; }
+
+  /* ── 컨텐츠 ───────────────────────────────────── */
+  .content { padding:24px 20px 0; max-width:740px; margin:0 auto; }
+
+  /* ── 섹션 카드 ────────────────────────────────── */
+  .section-card {
+    background:var(--card);
+    border-radius:12px;
+    border:1px solid var(--border);
+    margin-bottom:14px;
+    overflow:hidden;
+  }
+
+  /* 섹션 헤더 */
+  .section-hdr {
+    display:flex; align-items:center; gap:12px;
+    padding:14px 18px;
+    cursor:pointer; user-select:none;
+    border-bottom:1px solid transparent;
+    transition:background .15s;
+  }
+  .section-hdr:hover { background:var(--gray-l); }
+  .section-hdr.open  { border-bottom-color:var(--border); }
+
+  .sec-icon {
+    width:38px; height:38px; border-radius:9px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:20px; flex-shrink:0;
+  }
+  .ic-navy   { background:var(--navy-light); }
+  .ic-orange { background:var(--orange-l); }
+  .ic-green  { background:var(--green-l); }
+  .ic-red    { background:var(--red-l); }
+  .ic-gold   { background:#FEF3D8; }
+
+  .sec-info { flex:1; }
+  .sec-name { font-size:17px; font-weight:700; color:var(--text); margin-bottom:2px; }
+  .sec-desc { font-size:14px; color:var(--muted); }
+
+  .sec-right { display:flex; align-items:center; gap:10px; flex-shrink:0; }
+  .sec-pill  {
+    font-size:14px; font-weight:700;
+    padding:3px 10px; border-radius:99px;
+    background:var(--gray-l); color:var(--muted);
+    transition:all .3s;
+  }
+  .sec-pill.done { background:var(--green-l); color:var(--green); }
+  .sec-chevron { font-size:13px; color:var(--muted); transition:transform .25s; }
+  .section-hdr.open .sec-chevron { transform:rotate(180deg); }
+
+  /* 미니 진행 바 */
+  .mini-bar { height:3px; background:var(--gray-l); overflow:hidden; }
+  .mini-fill { height:100%; transition:width .4s; width:0%; }
+  .mf-navy   { background:var(--navy); }
+  .mf-orange { background:var(--orange); }
+  .mf-green  { background:var(--green); }
+  .mf-red    { background:var(--red); }
+  .mf-gold   { background:var(--gold); }
+
+  /* 섹션 본문 */
+  .section-body { display:none; padding:4px 0; }
+  .section-body.open { display:block; }
+
+  /* ── 체크 항목 ────────────────────────────────── */
+  .check-item {
+    display:flex; align-items:flex-start; gap:12px;
+    padding:10px 18px;
+    cursor:pointer;
+    transition:background .12s;
+    position:relative;
+  }
+  .check-item:hover { background:var(--gray-l); }
+  .check-item.checked { background:#F6FBF8; }
+
+  .check-item input[type="checkbox"] {
+    appearance:none; -webkit-appearance:none;
+    width:20px; height:20px;
+    border:2px solid var(--border); border-radius:5px;
+    flex-shrink:0; margin-top:1px;
+    cursor:pointer; transition:all .15s;
+    position:relative; background:#fff;
+  }
+  .check-item input:checked {
+    background:var(--green); border-color:var(--green);
+  }
+  .check-item input:checked::after {
+    content:''; position:absolute;
+    left:4px; top:1px; width:8px; height:12px;
+    border:2.5px solid #fff; border-top:none; border-left:none;
+    transform:rotate(45deg);
+  }
+
+  .check-text { flex:1; padding-top:1px; }
+  .check-main {
+    font-size:16px; color:var(--text); line-height:1.6;
+    transition:color .2s;
+  }
+  .check-item.checked .check-main {
+    color:var(--muted);
+    text-decoration:line-through;
+    text-decoration-color:#BBBBBB;
+  }
+  .check-sub {
+    font-size:14px; color:var(--muted);
+    margin-top:3px; line-height:1.4;
+  }
+  .check-item.checked .check-sub { color:#CCCCCC; }
+
+  /* 구분선 */
+  .grp-label {
+    font-size:13px; font-weight:700;
+    color:var(--muted); letter-spacing:1px;
+    padding:8px 18px 4px;
+    border-top:1px solid var(--border);
+    margin-top:4px;
+  }
+  .grp-label:first-child { border-top:none; margin-top:0; }
+
+  /* ── 결과 진단 카드 ───────────────────────────── */
+  .result-card {
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:18px 20px;
+    margin-bottom:14px;
+  }
+  .result-title {
+    font-size:14px; font-weight:700;
+    color:var(--muted); letter-spacing:1px;
+    margin-bottom:14px;
+  }
+  .stages { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; }
+  .stage-item {
+    border-radius:8px; padding:10px 6px;
+    text-align:center; border:1.5px solid var(--border);
+    background:var(--gray-l); transition:all .3s;
+  }
+  .stage-item.active { border-color:var(--green); background:var(--green-l); }
+  .stage-icon  { font-size:22px; margin-bottom:5px; }
+  .stage-name  { font-size:13px; font-weight:700; color:var(--muted); margin-bottom:2px; }
+  .stage-item.active .stage-name { color:var(--green); }
+  .stage-range { font-size:12px; color:#BBBBBB; }
+  .stage-item.active .stage-range { color:var(--green); }
+
+  /* ── 리셋 & 인쇄 ──────────────────────────────── */
+  .btn-wrap { text-align:center; margin-top:16px; }
+  .btn-reset {
+    font-family:inherit; font-size:15px;
+    color:var(--muted); background:none;
+    border:1px solid var(--border); border-radius:8px;
+    padding:8px 20px; cursor:pointer; transition:all .15s;
+  }
+  .btn-reset:hover { background:var(--gray-l); color:var(--text); }
+
+  .print-btn {
+    position:fixed; bottom:24px; right:24px;
+    background:var(--navy); color:#fff;
+    border:none; border-radius:50px;
+    padding:12px 22px;
+    font-family:inherit; font-size:15px; font-weight:700;
+    cursor:pointer;
+    box-shadow:0 4px 16px rgba(26,46,74,0.25);
+    transition:all .2s; z-index:100;
+  }
+  .print-btn:hover { background:var(--navy-mid); transform:translateY(-2px); }
+
+  /* ── 강의 메모 박스 ───────────────────────────── */
+  .memo-card {
+    background:var(--orange-l);
+    border:1px solid var(--orange);
+    border-radius:10px;
+    padding:16px 18px;
+    margin-bottom:14px;
+  }
+  .memo-title { font-size:15px; font-weight:700; color:var(--orange); margin-bottom:8px; }
+  .memo-box {
+    width:100%; border:1px solid var(--border);
+    border-radius:6px; background:#fff;
+    font-family:inherit; font-size:15px;
+    padding:10px; resize:none; line-height:1.6;
+    color:var(--text);
+  }
+
+  @media print {
+    body { background:#fff; padding:0; }
+    .hero { padding:16px 24px; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .section-body { display:block !important; }
+    .section-hdr.open { background:none !important; }
+    .sec-chevron { display:none; }
+    .print-btn { display:none; }
+    .btn-wrap { display:none; }
+    .memo-box { min-height:60px; }
+  }
+
+  @media (max-width:480px) {
+    .hero { padding:26px 16px 22px; }
+    .hero-title { font-size:24px; }
+    .content { padding:18px 12px 0; }
+    .stages { grid-template-columns:repeat(3,1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">SELF DIAGNOSIS</div>
+  <div class="hero-title">중장년 취업준비 상태 진단</div>
+  <div class="hero-sub">강의 시작 전 — 나의 현재 준비 상태를 솔직하게 체크하세요</div>
+  <div class="progress-wrap">
+    <div class="progress-top">
+      <span class="progress-label">전체 완료율</span>
+      <span class="progress-pct" id="pct">0%</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="main-bar"></div>
+    </div>
+    <div class="progress-sub">
+      <span><strong id="done-n">0</strong> / <span id="total-n">0</span> 완료</span>
+      <span>· 미완료 <strong id="left-n">0</strong>개</span>
+    </div>
+  </div>
+</div>
+
+<div class="stage-banner" id="stage-banner"></div>
+
+<div class="content" id="content"></div>
+
+<!-- 강의 메모 -->
+<div class="content">
+  <div class="memo-card">
+    <div class="memo-title">📝  강의 후 달라질 것 — 오늘 반드시 해결하고 싶은 것을 적어보세요</div>
+    <textarea class="memo-box" rows="3" placeholder="예) 이력서 경력 기술을 성과 중심으로 바꾸는 법을 배우고 싶다..."></textarea>
+  </div>
+
+  <!-- 결과 진단 단계 -->
+  <div class="result-card">
+    <div class="result-title">현재 취업준비 단계</div>
+    <div class="stages">
+      <div class="stage-item" id="st0">
+        <div class="stage-icon">🌱</div>
+        <div class="stage-name">시작 전</div>
+        <div class="stage-range">0~19%</div>
+      </div>
+      <div class="stage-item" id="st1">
+        <div class="stage-icon">🔍</div>
+        <div class="stage-name">탐색 중</div>
+        <div class="stage-range">20~39%</div>
+      </div>
+      <div class="stage-item" id="st2">
+        <div class="stage-icon">✏️</div>
+        <div class="stage-name">준비 중</div>
+        <div class="stage-range">40~59%</div>
+      </div>
+      <div class="stage-item" id="st3">
+        <div class="stage-icon">🚀</div>
+        <div class="stage-name">실전 진입</div>
+        <div class="stage-range">60~79%</div>
+      </div>
+      <div class="stage-item" id="st4">
+        <div class="stage-icon">🏆</div>
+        <div class="stage-name">완전 준비</div>
+        <div class="stage-range">80~100%</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-wrap">
+    <button class="btn-reset" onclick="resetAll()">↺  처음부터 다시 시작</button>
+  </div>
+</div>
+
+<button class="print-btn" onclick="window.print()">🖨️  인쇄하기</button>
+
+<script>
+const SECTIONS = [
+  {
+    id:'mindset', name:'마음가짐과 방향 설정', icon:'🧭', ic:'ic-navy', mf:'mf-navy',
+    desc:'구직 활동의 출발점 — 목표와 태도',
+    groups:[
+      { label:'목표 설정', items:[
+        { t:'재취업의 목적이 명확하다 (생계, 커리어 전환, 보람 등)', h:'막연히 "취업해야지"가 아닌 이유를 알고 있다' },
+        { t:'희망 직종·업종을 1~3가지로 좁혀두었다',                h:'모든 곳에 지원하는 것보다 선택과 집중이 효과적' },
+        { t:'희망 근무 형태를 정했다 (정규직·계약직·파트타임 등)', h:'' },
+        { t:'희망 연봉 범위를 현실적으로 설정했다',                 h:'이전 연봉에 집착하면 기회가 줄어든다' },
+      ]},
+      { label:'마음가짐', items:[
+        { t:'나이는 단점이 아닌 강점임을 받아들이고 있다',          h:'경험·신뢰·안정성 = 중장년의 무기' },
+        { t:'거절이나 탈락을 성장의 과정으로 받아들일 준비가 되어 있다', h:'' },
+        { t:'재취업에 걸리는 시간이 예상보다 길 수 있음을 인지하고 있다', h:'평균 구직기간 6~12개월' },
+      ]},
+    ]
+  },
+  {
+    id:'selfknow', name:'나 자신 파악', icon:'🔍', ic:'ic-orange', mf:'mf-orange',
+    desc:'강점·경력·가치관 분석 완료 여부',
+    groups:[
+      { label:'강점 파악', items:[
+        { t:'내가 가진 핵심 역량을 3가지 이상 말할 수 있다',        h:'즉시 대답 가능한 수준이어야 한다' },
+        { t:'내 강점을 뒷받침하는 구체적 사례(에피소드)가 있다',    h:'숫자·성과 포함' },
+        { t:'이전 직장에서 가장 잘했던 업무를 정리했다',           h:'' },
+        { t:'내 강점이 지원 직무에 어떻게 기여할 수 있는지 연결했다', h:'강점 → 직무 연결이 핵심' },
+      ]},
+      { label:'경력 정리', items:[
+        { t:'최근 10~15년 주요 경력을 한눈에 정리해 두었다',       h:'전부가 아닌 핵심만' },
+        { t:'각 경력별로 성과(수치·비율·규모)를 정리했다',         h:'"담당했습니다"가 아닌 숫자로 표현' },
+        { t:'경력 공백이 있다면 그 기간 설명을 준비해 두었다',     h:'자기계발·돌봄·재교육 등으로 긍정적으로' },
+      ]},
+    ]
+  },
+  {
+    id:'docs', name:'서류 준비', icon:'📄', ic:'ic-green', mf:'mf-green',
+    desc:'이력서·자기소개서 완성 여부',
+    groups:[
+      { label:'이력서', items:[
+        { t:'이력서를 최근 6개월 이내에 업데이트했다',             h:'오래된 이력서로 지원하면 감점' },
+        { t:'경력이 최신 순(역순)으로 배열되어 있다',             h:'채용 담당자는 최근 경력을 가장 먼저 본다' },
+        { t:'전문적인 이메일 주소를 사용하고 있다',               h:'baby1973@naver.com → 이름+직군 형태로' },
+        { t:'이력서가 A4 2페이지 이내로 정리되어 있다',           h:'' },
+        { t:'PDF 형식으로 저장해 두었다',                        h:'HWP는 열리지 않는 경우 있음' },
+      ]},
+      { label:'자기소개서', items:[
+        { t:'자기소개서 초안을 1개 이상 작성해 두었다',           h:'없으면 0점, 있으면 다듬으면 된다' },
+        { t:'자기소개서에 STAR 공식이 적용되어 있다',             h:'상황→과제→행동→결과 구조' },
+        { t:'"열심히 하겠습니다" 같은 추상적 표현이 없다',        h:'채용담당자가 가장 싫어하는 표현 1위' },
+        { t:'지원 직무와 나의 강점이 연결되어 있다',              h:'"귀사에 기여하겠습니다"가 아니라 "OO역량으로 OO에 기여"' },
+      ]},
+    ]
+  },
+  {
+    id:'info', name:'정보 수집과 채널 활용', icon:'🌐', ic:'ic-red', mf:'mf-red',
+    desc:'구직 채널·기업 정보·시장 파악',
+    groups:[
+      { label:'구직 채널', items:[
+        { t:'사람인·잡코리아·워크넷 등 주요 취업 플랫폼에 가입했다', h:'' },
+        { t:'중장년 전용 구직 채널(장년인턴, 중장년내일센터 등)을 알고 있다', h:'정부 지원 프로그램 활용 가능' },
+        { t:'주 2회 이상 정기적으로 채용 공고를 확인하고 있다',    h:'꾸준함이 핵심' },
+        { t:'지원 전 해당 기업 홈페이지·뉴스를 리서치하는 습관이 있다', h:'맞춤 지원이 합격률을 높인다' },
+      ]},
+      { label:'네트워크', items:[
+        { t:'업계 지인(전 동료, 상사, 거래처)에게 구직 중임을 알렸다', h:'숨기지 말 것 — 소개 채용이 가장 확률 높다' },
+        { t:'SNS(링크드인, 블라인드 등)를 구직에 활용하고 있다',  h:'' },
+        { t:'관심 기업의 채용 정보를 정기적으로 팔로우하고 있다', h:'' },
+      ]},
+    ]
+  },
+  {
+    id:'interview', name:'면접 준비', icon:'🎤', ic:'ic-gold', mf:'mf-gold',
+    desc:'말하기·실전 대응·복장 준비',
+    groups:[
+      { label:'말하기 준비', items:[
+        { t:'1분 자기소개 스피치를 준비해 두었다',                h:'이름·경력·강점·지원 이유 4요소' },
+        { t:'"경력 공백을 어떻게 보냈나요?" 답변을 준비했다',     h:'중장년 단골 질문 1위' },
+        { t:'"연봉은 어느 정도 기대하세요?" 답변을 준비했다',     h:'감정적 대응 금지 — 유연하게 대답' },
+        { t:'"젊은 팀원들과 잘 어울릴 수 있나요?" 답변을 준비했다', h:'나이 관련 질문 대비 필수' },
+      ]},
+      { label:'실전 대비', items:[
+        { t:'모의 면접을 1회 이상 연습해 보았다 (혼자라도)',       h:'거울 앞 or 스마트폰 녹화 활용' },
+        { t:'면접 복장을 점검해 두었다',                          h:'단정함이 기본 — 업종에 맞는 수준' },
+        { t:'면접 당일 회사까지 가는 교통편을 미리 확인했다',     h:'지각은 절대 금물' },
+      ]},
+    ]
+  },
+];
+
+// ── 상태 ────────────────────────────────────────────────────────
+const state = {};
+let totalItems = 0;
+
+const STAGES = [
+  { range:[0,19],  cls:'stage-0', text:'🌱  아직 시작 전이에요 — 오늘 강의가 첫걸음입니다!' },
+  { range:[20,39], cls:'stage-1', text:'🔍  탐색 중이에요 — 방향은 잡혔으니 서류부터 손봐요' },
+  { range:[40,59], cls:'stage-2', text:'✏️  준비 중이에요 — 조금만 더 다듬으면 충분합니다' },
+  { range:[60,79], cls:'stage-3', text:'🚀  실전 진입 단계예요 — 면접 준비에 집중하세요' },
+  { range:[80,100],cls:'stage-4', text:'🏆  완전 준비 완료! — 이 강의로 마지막을 다듬어요' },
+];
+
+// ── 렌더링 ──────────────────────────────────────────────────────
+function buildUI() {
+  const container = document.getElementById('content');
+  container.innerHTML = '';
+
+  SECTIONS.forEach(sec => {
+    state[sec.id] = state[sec.id] || {};
+    let itemIdx = 0;
+
+    const card = document.createElement('div');
+    card.className = 'section-card';
+
+    // 헤더
+    const hdr = document.createElement('div');
+    hdr.className = 'section-hdr open';
+    hdr.id = 'hdr-' + sec.id;
+    hdr.innerHTML = `
+      <div class="sec-icon ${sec.ic}">${sec.icon}</div>
+      <div class="sec-info">
+        <div class="sec-name">${sec.name}</div>
+        <div class="sec-desc">${sec.desc}</div>
+      </div>
+      <div class="sec-right">
+        <div class="sec-pill" id="pill-${sec.id}">0 / 0</div>
+        <div class="sec-chevron">▼</div>
+      </div>`;
+    hdr.addEventListener('click', () => {
+      hdr.classList.toggle('open');
+      body.classList.toggle('open');
+    });
+
+    // 미니 바
+    const mini = document.createElement('div');
+    mini.className = 'mini-bar';
+    mini.innerHTML = `<div class="mini-fill ${sec.mf}" id="mini-${sec.id}"></div>`;
+
+    // 본문
+    const body = document.createElement('div');
+    body.className = 'section-body open';
+
+    sec.groups.forEach(grp => {
+      const lbl = document.createElement('div');
+      lbl.className = 'grp-label';
+      lbl.textContent = grp.label;
+      body.appendChild(lbl);
+
+      grp.items.forEach(item => {
+        const key = `${sec.id}_${itemIdx}`;
+        state[sec.id][itemIdx] = state[sec.id][itemIdx] || false;
+        totalItems++;
+
+        const row = document.createElement('label');
+        row.className = 'check-item' + (state[sec.id][itemIdx] ? ' checked' : '');
+        row.innerHTML = `
+          <input type="checkbox" id="chk-${key}" ${state[sec.id][itemIdx] ? 'checked' : ''}>
+          <div class="check-text">
+            <div class="check-main">${item.t}</div>
+            ${item.h ? `<div class="check-sub">${item.h}</div>` : ''}
+          </div>`;
+        const cb = row.querySelector('input');
+        const idx = itemIdx;
+        cb.addEventListener('change', () => {
+          state[sec.id][idx] = cb.checked;
+          row.classList.toggle('checked', cb.checked);
+          update();
+        });
+        body.appendChild(row);
+        itemIdx++;
+      });
+    });
+
+    card.appendChild(hdr);
+    card.appendChild(mini);
+    card.appendChild(body);
+    container.appendChild(card);
+  });
+
+  document.getElementById('total-n').textContent = totalItems;
+  document.getElementById('left-n').textContent  = totalItems;
+  update();
+}
+
+function update() {
+  let allDone = 0, allTotal = 0;
+
+  SECTIONS.forEach(sec => {
+    const vals  = Object.values(state[sec.id]);
+    const total = vals.length;
+    const done  = vals.filter(Boolean).length;
+    allDone  += done;
+    allTotal += total;
+
+    const pct = total ? Math.round((done/total)*100) : 0;
+    document.getElementById(`pill-${sec.id}`).textContent = `${done} / ${total}`;
+    document.getElementById(`pill-${sec.id}`).classList.toggle('done', done===total && total>0);
+    document.getElementById(`mini-${sec.id}`).style.width = pct + '%';
+  });
+
+  const pct = allTotal ? Math.round((allDone/allTotal)*100) : 0;
+  document.getElementById('pct').textContent      = pct + '%';
+  document.getElementById('main-bar').style.width = pct + '%';
+  document.getElementById('done-n').textContent   = allDone;
+  document.getElementById('total-n').textContent  = allTotal;
+  document.getElementById('left-n').textContent   = allTotal - allDone;
+
+  // 단계 업데이트
+  for (let i=0; i<5; i++) document.getElementById('st'+i).classList.remove('active');
+  const si = pct>=80?4:pct>=60?3:pct>=40?2:pct>=20?1:0;
+  document.getElementById('st'+si).classList.add('active');
+
+  // 배너
+  const banner = document.getElementById('stage-banner');
+  const stg = STAGES[si];
+  banner.className = 'stage-banner show ' + stg.cls;
+  banner.textContent = stg.text;
+}
+
+function resetAll() {
+  if (!confirm('모든 체크를 초기화할까요?')) return;
+  SECTIONS.forEach(sec => {
+    Object.keys(state[sec.id]).forEach(k => { state[sec.id][k]=false; });
+  });
+  document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked=false);
+  document.querySelectorAll('.check-item').forEach(el => el.classList.remove('checked'));
+  update();
+}
+
+buildUI();
+</script>
+</body>
+</html>
