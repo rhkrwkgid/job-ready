@@ -240,19 +240,6 @@
   }
   .print-btn:hover { background:var(--navy-mid); transform:translateY(-2px); }
 
-  .name-card {
-    background:var(--card); border:1px solid var(--border);
-    border-radius:10px; padding:14px 18px;
-    margin-bottom:14px; display:flex; align-items:center; gap:12px;
-  }
-  .name-title { font-size:15px; font-weight:700; color:var(--navy-mid); flex-shrink:0; }
-  .name-input {
-    flex:1; border:1.5px solid var(--border); border-radius:8px;
-    font-family:inherit; font-size:15px; padding:8px 12px;
-    color:var(--text); outline:none; transition:border .15s;
-  }
-  .name-input:focus { border-color:var(--navy-mid); }
-
   .btn-submit {
     font-family:inherit; font-size:15px; font-weight:700;
     color:#fff; background:var(--green);
@@ -426,11 +413,6 @@
 <div class="content" id="content"></div>
 
 <div class="content">
-  <div class="name-card">
-    <div class="name-title">👤  이름을 입력해주세요</div>
-    <input class="name-input" id="name-input" type="text" placeholder="예) 홍길동" maxlength="20">
-  </div>
-
   <div class="memo-card">
     <div class="memo-title">📝  강의 후 달라질 것 — 오늘 반드시 해결하고 싶은 것을 적어보세요</div>
     <textarea class="memo-box" id="memo-input" rows="3" placeholder="예) 이력서 경력 기술을 성과 중심으로 바꾸는 법을 배우고 싶다..."></textarea>
@@ -506,7 +488,6 @@
 <button class="print-btn" onclick="window.print()">🖨️  인쇄하기</button>
 
 <script>
-// ★ 강사님이 여기에 Google Apps Script 웹앱 URL을 붙여넣으세요 ★
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycbyNdG1o5su8zyFDh-8kHFsM0Mv1N4yzKR9rEgrw5PTCgWrDrvSi4BBWQVfULVrNCnexcg/exec';
 
 const SECTIONS = [
@@ -748,9 +729,8 @@ function resetAll() {
 }
 
 function submitToSheet() {
-  if(!SHEET_URL) { alert('SHEET_URL이 설정되지 않았습니다.\nindex.html 상단의 SHEET_URL에 Google Apps Script URL을 입력해주세요.'); return; }
-  const name=document.getElementById('name-input').value.trim();
-  if(!name) { alert('이름을 먼저 입력해주세요.'); document.getElementById('name-input').focus(); return; }
+  if(!SHEET_URL) { alert('SHEET_URL이 설정되지 않았습니다.'); return; }
+  const name='익명';
   const sections={}; let allYes=0, allTotal=0;
   SECTIONS.forEach(sec=>{
     const vals=Object.values(state[sec.id]),total=vals.length,yes=vals.filter(v=>v===true).length;
