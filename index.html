@@ -30,7 +30,6 @@
     min-height:100vh; padding-bottom:60px;
   }
 
-  /* ── 헤더 ─────────────────────────────────────── */
   .hero {
     background:var(--navy);
     padding:36px 32px 28px;
@@ -54,7 +53,6 @@
   .hero-title{ font-size:28px; font-weight:700; color:#fff; line-height:1.35; margin-bottom:4px; }
   .hero-sub  { font-size:15px; color:#8AAAC8; margin-bottom:24px; }
 
-  /* ── 전체 진행률 ──────────────────────────────── */
   .progress-wrap {
     background:rgba(255,255,255,0.07);
     border-radius:10px; padding:16px 20px;
@@ -69,7 +67,6 @@
   .progress-sub span{ font-size:14px; color:#8AAAC8; }
   .progress-sub strong{ color:#fff; }
 
-  /* ── 진단 단계 배너 ───────────────────────────── */
   .stage-banner {
     display:none;
     margin:0 20px;
@@ -86,10 +83,8 @@
   .stage-3 { background:#E8F5EE; color:var(--green); }
   .stage-4 { background:var(--green); color:#fff; }
 
-  /* ── 컨텐츠 ───────────────────────────────────── */
   .content { padding:24px 20px 0; max-width:740px; margin:0 auto; }
 
-  /* ── 섹션 카드 ────────────────────────────────── */
   .section-card {
     background:var(--card);
     border-radius:12px;
@@ -98,7 +93,6 @@
     overflow:hidden;
   }
 
-  /* 섹션 헤더 */
   .section-hdr {
     display:flex; align-items:center; gap:12px;
     padding:14px 18px;
@@ -135,7 +129,6 @@
   .sec-chevron { font-size:13px; color:var(--muted); transition:transform .25s; }
   .section-hdr.open .sec-chevron { transform:rotate(180deg); }
 
-  /* 미니 진행 바 */
   .mini-bar { height:3px; background:var(--gray-l); overflow:hidden; }
   .mini-fill { height:100%; transition:width .4s; width:0%; }
   .mf-navy   { background:var(--navy); }
@@ -144,11 +137,9 @@
   .mf-red    { background:var(--red); }
   .mf-gold   { background:var(--gold); }
 
-  /* 섹션 본문 */
   .section-body { display:none; padding:4px 0; }
   .section-body.open { display:block; }
 
-  /* ── 체크 항목 ────────────────────────────────── */
   .check-item {
     display:flex; flex-direction:column; gap:8px;
     padding:12px 18px;
@@ -173,7 +164,6 @@
   .check-item.ans-yes .check-sub { color:#7BBFA0; }
   .check-item.ans-no  .check-sub { color:#CCC; }
 
-  /* 예/아니오 버튼 그룹 */
   .yn-wrap {
     display:flex; gap:8px;
   }
@@ -194,7 +184,6 @@
   }
   .yn-btn:not(.active):hover { background:var(--gray-l); }
 
-  /* 구분선 */
   .grp-label {
     font-size:12px; font-weight:700;
     color:var(--muted); letter-spacing:1px;
@@ -204,7 +193,6 @@
     border-bottom:1px solid var(--border);
   }
 
-  /* ── 결과 진단 카드 ───────────────────────────── */
   .result-card {
     background:var(--card);
     border:1px solid var(--border);
@@ -230,7 +218,6 @@
   .stage-range { font-size:12px; color:#BBBBBB; }
   .stage-item.active .stage-range { color:var(--green); }
 
-  /* ── 리셋 & 인쇄 ──────────────────────────────── */
   .btn-wrap { text-align:center; margin-top:16px; }
   .btn-reset {
     font-family:inherit; font-size:15px;
@@ -252,7 +239,6 @@
   }
   .print-btn:hover { background:var(--navy-mid); transform:translateY(-2px); }
 
-  /* ── 강의 메모 박스 ───────────────────────────── */
   .memo-card {
     background:var(--orange-l);
     border:1px solid var(--orange);
@@ -269,7 +255,6 @@
     color:var(--text);
   }
 
-  /* ── 결과 모달 ───────────────────────────────── */
   .modal-overlay {
     display:none; position:fixed; inset:0;
     background:rgba(0,0,0,0.55); z-index:200;
@@ -342,6 +327,13 @@
     content:'•'; position:absolute; left:0; color:var(--orange);
   }
 
+  .memo-result-box {
+    background:var(--orange-l); border:1px solid var(--orange);
+    border-radius:10px; padding:14px 16px; margin-top:6px;
+    font-size:15px; color:var(--text); line-height:1.7;
+    white-space:pre-wrap; word-break:break-word;
+  }
+
   .modal-close-btn {
     width:100%; font-family:inherit; font-size:16px; font-weight:700;
     background:var(--navy); color:#fff; border:none; border-radius:10px;
@@ -350,7 +342,6 @@
   }
   .modal-close-btn:hover { background:var(--navy-mid); }
 
-  /* 결과 보기 버튼 */
   .btn-result {
     font-family:inherit; font-size:15px; font-weight:700;
     color:#fff; background:var(--orange);
@@ -404,14 +395,12 @@
 
 <div class="content" id="content"></div>
 
-<!-- 강의 메모 -->
 <div class="content">
   <div class="memo-card">
     <div class="memo-title">📝  강의 후 달라질 것 — 오늘 반드시 해결하고 싶은 것을 적어보세요</div>
-    <textarea class="memo-box" rows="3" placeholder="예) 이력서 경력 기술을 성과 중심으로 바꾸는 법을 배우고 싶다..."></textarea>
+    <textarea class="memo-box" id="memo-input" rows="3" placeholder="예) 이력서 경력 기술을 성과 중심으로 바꾸는 법을 배우고 싶다..."></textarea>
   </div>
 
-  <!-- 결과 진단 단계 -->
   <div class="result-card">
     <div class="result-title">현재 취업준비 단계</div>
     <div class="stages">
@@ -449,7 +438,6 @@
   </div>
 </div>
 
-<!-- 결과 모달 -->
 <div class="modal-overlay" id="result-modal" onclick="handleOverlayClick(event)">
   <div class="modal-box">
     <div class="modal-head">
@@ -469,6 +457,10 @@
       <div id="modal-rows"></div>
       <div class="modal-section-title">지금 가장 필요한 것</div>
       <div class="advice-box" id="modal-advice"></div>
+      <div id="modal-memo-wrap" style="display:none">
+        <div class="modal-section-title">📝 강의 후 달라질 것 — 내가 쓴 내용</div>
+        <div class="memo-result-box" id="modal-memo-text"></div>
+      </div>
       <button class="modal-close-btn" onclick="closeResult()">닫기</button>
     </div>
   </div>
@@ -786,6 +778,16 @@ function showResult() {
     ).join('');
   }
 
+  // 메모 표시
+  const memoText = document.getElementById('memo-input').value.trim();
+  const memoWrap = document.getElementById('modal-memo-wrap');
+  if (memoText) {
+    document.getElementById('modal-memo-text').textContent = memoText;
+    memoWrap.style.display = 'block';
+  } else {
+    memoWrap.style.display = 'none';
+  }
+
   document.getElementById('result-modal').classList.add('show');
   document.body.style.overflow = 'hidden';
 }
@@ -807,7 +809,17 @@ function resetAll() {
   buildUI();
 }
 
+function initMemo() {
+  const ta = document.getElementById('memo-input');
+  const saved = localStorage.getItem('jr_memo');
+  if (saved) ta.value = saved;
+  ta.addEventListener('input', () => {
+    localStorage.setItem('jr_memo', ta.value);
+  });
+}
+
 buildUI();
+initMemo();
 </script>
 </body>
 </html>
