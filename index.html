@@ -239,6 +239,35 @@
   }
   .print-btn:hover { background:var(--navy-mid); transform:translateY(-2px); }
 
+  .name-card {
+    background:var(--card); border:1px solid var(--border);
+    border-radius:10px; padding:14px 18px;
+    margin-bottom:14px; display:flex; align-items:center; gap:12px;
+  }
+  .name-title { font-size:15px; font-weight:700; color:var(--navy-mid); flex-shrink:0; }
+  .name-input {
+    flex:1; border:1.5px solid var(--border); border-radius:8px;
+    font-family:inherit; font-size:15px; padding:8px 12px;
+    color:var(--text); outline:none; transition:border .15s;
+  }
+  .name-input:focus { border-color:var(--navy-mid); }
+
+  .btn-submit {
+    font-family:inherit; font-size:15px; font-weight:700;
+    color:#fff; background:var(--green);
+    border:none; border-radius:8px;
+    padding:9px 22px; cursor:pointer; transition:all .15s;
+    margin-left:10px;
+  }
+  .btn-submit:hover { background:#1F4D38; }
+  .btn-submit:disabled { background:#AAA; cursor:not-allowed; }
+  .submit-status {
+    text-align:center; margin-top:10px;
+    font-size:14px; font-weight:700; display:none;
+  }
+  .submit-status.ok  { color:var(--green); display:block; }
+  .submit-status.err { color:var(--red);   display:block; }
+
   .memo-card {
     background:var(--orange-l);
     border:1px solid var(--orange);
@@ -396,6 +425,11 @@
 <div class="content" id="content"></div>
 
 <div class="content">
+  <div class="name-card">
+    <div class="name-title">👤  이름을 입력해주세요</div>
+    <input class="name-input" id="name-input" type="text" placeholder="예) 홍길동" maxlength="20">
+  </div>
+
   <div class="memo-card">
     <div class="memo-title">📝  강의 후 달라질 것 — 오늘 반드시 해결하고 싶은 것을 적어보세요</div>
     <textarea class="memo-box" id="memo-input" rows="3" placeholder="예) 이력서 경력 기술을 성과 중심으로 바꾸는 법을 배우고 싶다..."></textarea>
@@ -435,7 +469,9 @@
   <div class="btn-wrap">
     <button class="btn-reset" onclick="resetAll()">↺  처음부터 다시 시작</button>
     <button class="btn-result" onclick="showResult()">📊  결과 확인하기</button>
+    <button class="btn-submit" id="btn-submit" onclick="submitToSheet()">📤  강사님께 제출</button>
   </div>
+  <div class="submit-status" id="submit-status"></div>
 </div>
 
 <div class="modal-overlay" id="result-modal" onclick="handleOverlayClick(event)">
@@ -469,6 +505,9 @@
 <button class="print-btn" onclick="window.print()">🖨️  인쇄하기</button>
 
 <script>
+// ★ 강사님이 여기에 Google Apps Script 웹앱 URL을 붙여넣으세요 ★
+const SHEET_URL = '';
+
 const SECTIONS = [
   {
     id:'mindset', name:'마음가짐과 방향 설정', icon:'🧭', ic:'ic-navy', mf:'mf-navy',
@@ -476,12 +515,12 @@ const SECTIONS = [
     groups:[
       { label:'목표 설정', items:[
         { t:'재취업의 목적이 명확하다 (생계, 커리어 전환, 보람 등)', h:'막연히 "취업해야지"가 아닌 이유를 알고 있다' },
-        { t:'희망 직종·업종을 1~3가지로 좁혀두었다',                h:'모든 곳에 지원하는 것보다 선택과 집중이 효과적' },
+        { t:'희망 직종·업종을 1~3가지로 좁혀두었다', h:'모든 곳에 지원하는 것보다 선택과 집중이 효과적' },
         { t:'희망 근무 형태를 정했다 (정규직·계약직·파트타임 등)', h:'' },
-        { t:'희망 연봉 범위를 현실적으로 설정했다',                 h:'이전 연봉에 집착하면 기회가 줄어든다' },
+        { t:'희망 연봉 범위를 현실적으로 설정했다', h:'이전 연봉에 집착하면 기회가 줄어든다' },
       ]},
       { label:'마음가짐', items:[
-        { t:'나이는 단점이 아닌 강점임을 받아들이고 있다',          h:'경험·신뢰·안정성 = 중장년의 무기' },
+        { t:'나이는 단점이 아닌 강점임을 받아들이고 있다', h:'경험·신뢰·안정성 = 중장년의 무기' },
         { t:'거절이나 탈락을 성장의 과정으로 받아들일 준비가 되어 있다', h:'' },
         { t:'재취업에 걸리는 시간이 예상보다 길 수 있음을 인지하고 있다', h:'평균 구직기간 6~12개월' },
       ]},
@@ -492,15 +531,15 @@ const SECTIONS = [
     desc:'강점·경력·가치관 분석 완료 여부',
     groups:[
       { label:'강점 파악', items:[
-        { t:'내가 가진 핵심 역량을 3가지 이상 말할 수 있다',        h:'즉시 대답 가능한 수준이어야 한다' },
-        { t:'내 강점을 뒷받침하는 구체적 사례(에피소드)가 있다',    h:'숫자·성과 포함' },
-        { t:'이전 직장에서 가장 잘했던 업무를 정리했다',           h:'' },
+        { t:'내가 가진 핵심 역량을 3가지 이상 말할 수 있다', h:'즉시 대답 가능한 수준이어야 한다' },
+        { t:'내 강점을 뒷받침하는 구체적 사례(에피소드)가 있다', h:'숫자·성과 포함' },
+        { t:'이전 직장에서 가장 잘했던 업무를 정리했다', h:'' },
         { t:'내 강점이 지원 직무에 어떻게 기여할 수 있는지 연결했다', h:'강점 → 직무 연결이 핵심' },
       ]},
       { label:'경력 정리', items:[
-        { t:'최근 10~15년 주요 경력을 한눈에 정리해 두었다',       h:'전부가 아닌 핵심만' },
-        { t:'각 경력별로 성과(수치·비율·규모)를 정리했다',         h:'"담당했습니다"가 아닌 숫자로 표현' },
-        { t:'경력 공백이 있다면 그 기간 설명을 준비해 두었다',     h:'자기계발·돌봄·재교육 등으로 긍정적으로' },
+        { t:'최근 10~15년 주요 경력을 한눈에 정리해 두었다', h:'전부가 아닌 핵심만' },
+        { t:'각 경력별로 성과(수치·비율·규모)를 정리했다', h:'"담당했습니다"가 아닌 숫자로 표현' },
+        { t:'경력 공백이 있다면 그 기간 설명을 준비해 두었다', h:'자기계발·돌봄·재교육 등으로 긍정적으로' },
       ]},
     ]
   },
@@ -509,17 +548,17 @@ const SECTIONS = [
     desc:'이력서·자기소개서 완성 여부',
     groups:[
       { label:'이력서', items:[
-        { t:'이력서를 최근 6개월 이내에 업데이트했다',             h:'오래된 이력서로 지원하면 감점' },
-        { t:'경력이 최신 순(역순)으로 배열되어 있다',             h:'채용 담당자는 최근 경력을 가장 먼저 본다' },
-        { t:'전문적인 이메일 주소를 사용하고 있다',               h:'baby1973@naver.com → 이름+직군 형태로' },
-        { t:'이력서가 A4 2페이지 이내로 정리되어 있다',           h:'' },
-        { t:'PDF 형식으로 저장해 두었다',                        h:'HWP는 열리지 않는 경우 있음' },
+        { t:'이력서를 최근 6개월 이내에 업데이트했다', h:'오래된 이력서로 지원하면 감점' },
+        { t:'경력이 최신 순(역순)으로 배열되어 있다', h:'채용 담당자는 최근 경력을 가장 먼저 본다' },
+        { t:'전문적인 이메일 주소를 사용하고 있다', h:'baby1973@naver.com → 이름+직군 형태로' },
+        { t:'이력서가 A4 2페이지 이내로 정리되어 있다', h:'' },
+        { t:'PDF 형식으로 저장해 두었다', h:'HWP는 열리지 않는 경우 있음' },
       ]},
       { label:'자기소개서', items:[
-        { t:'자기소개서 초안을 1개 이상 작성해 두었다',           h:'없으면 0점, 있으면 다듬으면 된다' },
-        { t:'자기소개서에 STAR 공식이 적용되어 있다',             h:'상황→과제→행동→결과 구조' },
-        { t:'"열심히 하겠습니다" 같은 추상적 표현이 없다',        h:'채용담당자가 가장 싫어하는 표현 1위' },
-        { t:'지원 직무와 나의 강점이 연결되어 있다',              h:'"귀사에 기여하겠습니다"가 아니라 "OO역량으로 OO에 기여"' },
+        { t:'자기소개서 초안을 1개 이상 작성해 두었다', h:'없으면 0점, 있으면 다듬으면 된다' },
+        { t:'자기소개서에 STAR 공식이 적용되어 있다', h:'상황→과제→행동→결과 구조' },
+        { t:'"열심히 하겠습니다" 같은 추상적 표현이 없다', h:'채용담당자가 가장 싫어하는 표현 1위' },
+        { t:'지원 직무와 나의 강점이 연결되어 있다', h:'"귀사에 기여하겠습니다"가 아니라 "OO역량으로 OO에 기여"' },
       ]},
     ]
   },
@@ -530,12 +569,12 @@ const SECTIONS = [
       { label:'구직 채널', items:[
         { t:'사람인·잡코리아·워크넷 등 주요 취업 플랫폼에 가입했다', h:'' },
         { t:'중장년 전용 구직 채널(장년인턴, 중장년내일센터 등)을 알고 있다', h:'정부 지원 프로그램 활용 가능' },
-        { t:'주 2회 이상 정기적으로 채용 공고를 확인하고 있다',    h:'꾸준함이 핵심' },
+        { t:'주 2회 이상 정기적으로 채용 공고를 확인하고 있다', h:'꾸준함이 핵심' },
         { t:'지원 전 해당 기업 홈페이지·뉴스를 리서치하는 습관이 있다', h:'맞춤 지원이 합격률을 높인다' },
       ]},
       { label:'네트워크', items:[
         { t:'업계 지인(전 동료, 상사, 거래처)에게 구직 중임을 알렸다', h:'숨기지 말 것 — 소개 채용이 가장 확률 높다' },
-        { t:'SNS(링크드인, 블라인드 등)를 구직에 활용하고 있다',  h:'' },
+        { t:'SNS(링크드인, 블라인드 등)를 구직에 활용하고 있다', h:'' },
         { t:'관심 기업의 채용 정보를 정기적으로 팔로우하고 있다', h:'' },
       ]},
     ]
@@ -545,15 +584,15 @@ const SECTIONS = [
     desc:'말하기·실전 대응·복장 준비',
     groups:[
       { label:'말하기 준비', items:[
-        { t:'1분 자기소개 스피치를 준비해 두었다',                h:'이름·경력·강점·지원 이유 4요소' },
-        { t:'"경력 공백을 어떻게 보냈나요?" 답변을 준비했다',     h:'중장년 단골 질문 1위' },
-        { t:'"연봉은 어느 정도 기대하세요?" 답변을 준비했다',     h:'감정적 대응 금지 — 유연하게 대답' },
+        { t:'1분 자기소개 스피치를 준비해 두었다', h:'이름·경력·강점·지원 이유 4요소' },
+        { t:'"경력 공백을 어떻게 보냈나요?" 답변을 준비했다', h:'중장년 단골 질문 1위' },
+        { t:'"연봉은 어느 정도 기대하세요?" 답변을 준비했다', h:'감정적 대응 금지 — 유연하게 대답' },
         { t:'"젊은 팀원들과 잘 어울릴 수 있나요?" 답변을 준비했다', h:'나이 관련 질문 대비 필수' },
       ]},
       { label:'실전 대비', items:[
-        { t:'모의 면접을 1회 이상 연습해 보았다 (혼자라도)',       h:'거울 앞 or 스마트폰 녹화 활용' },
-        { t:'면접 복장을 점검해 두었다',                          h:'단정함이 기본 — 업종에 맞는 수준' },
-        { t:'면접 당일 회사까지 가는 교통편을 미리 확인했다',     h:'지각은 절대 금물' },
+        { t:'모의 면접을 1회 이상 연습해 보았다 (혼자라도)', h:'거울 앞 or 스마트폰 녹화 활용' },
+        { t:'면접 복장을 점검해 두었다', h:'단정함이 기본 — 업종에 맞는 수준' },
+        { t:'면접 당일 회사까지 가는 교통편을 미리 확인했다', h:'지각은 절대 금물' },
       ]},
     ]
   },
@@ -563,20 +602,14 @@ const state = {};
 let totalItems = 0;
 
 const STAGES = [
-  { range:[0,19],  cls:'stage-0', text:'🌱  아직 시작 전이에요 — 오늘 강의가 첫걸음입니다!',
-    badge:'시작 전', badgeBg:'#EEF2F8', badgeColor:'#2C4A6E' },
-  { range:[20,39], cls:'stage-1', text:'🔍  탐색 중이에요 — 방향은 잡혔으니 서류부터 손봐요',
-    badge:'탐색 중', badgeBg:'#FFF5EA', badgeColor:'#B04010' },
-  { range:[40,59], cls:'stage-2', text:'✏️  준비 중이에요 — 조금만 더 다듬으면 충분합니다',
-    badge:'준비 중', badgeBg:'#FFF9E0', badgeColor:'#8B6000' },
-  { range:[60,79], cls:'stage-3', text:'🚀  실전 진입 단계예요 — 면접 준비에 집중하세요',
-    badge:'실전 진입', badgeBg:'#E8F5EE', badgeColor:'#2D6A4F' },
-  { range:[80,100],cls:'stage-4', text:'🏆  완전 준비 완료! — 이 강의로 마지막을 다듬어요',
-    badge:'완전 준비', badgeBg:'#2D6A4F', badgeColor:'#fff' },
+  { range:[0,19],  cls:'stage-0', text:'🌱  아직 시작 전이에요 — 오늘 강의가 첫걸음입니다!', badge:'시작 전', badgeBg:'#EEF2F8', badgeColor:'#2C4A6E' },
+  { range:[20,39], cls:'stage-1', text:'🔍  탐색 중이에요 — 방향은 잡혔으니 서류부터 손봐요', badge:'탐색 중', badgeBg:'#FFF5EA', badgeColor:'#B04010' },
+  { range:[40,59], cls:'stage-2', text:'✏️  준비 중이에요 — 조금만 더 다듬으면 충분합니다', badge:'준비 중', badgeBg:'#FFF9E0', badgeColor:'#8B6000' },
+  { range:[60,79], cls:'stage-3', text:'🚀  실전 진입 단계예요 — 면접 준비에 집중하세요', badge:'실전 진입', badgeBg:'#E8F5EE', badgeColor:'#2D6A4F' },
+  { range:[80,100],cls:'stage-4', text:'🏆  완전 준비 완료! — 이 강의로 마지막을 다듬어요', badge:'완전 준비', badgeBg:'#2D6A4F', badgeColor:'#fff' },
 ];
 
 const SECTION_COLORS = ['#1A2E4A','#D4621A','#2D6A4F','#C0392B','#E8A020'];
-
 const ADVICES = {
   mindset:   '목표와 마음가짐이 흔들리면 모든 준비가 무너져요. 재취업 이유를 다시 적어보세요.',
   selfknow:  '나를 모르면 이력서도 면접도 공허해요. 핵심 역량 3가지를 지금 당장 종이에 써보세요.',
@@ -589,233 +622,154 @@ function buildUI() {
   const container = document.getElementById('content');
   container.innerHTML = '';
   totalItems = 0;
-
   SECTIONS.forEach(sec => {
     state[sec.id] = state[sec.id] || {};
     let itemIdx = 0;
-
     const card = document.createElement('div');
     card.className = 'section-card';
-
     const hdr = document.createElement('div');
     hdr.className = 'section-hdr open';
     hdr.id = 'hdr-' + sec.id;
-    hdr.innerHTML = `
-      <div class="sec-icon ${sec.ic}">${sec.icon}</div>
-      <div class="sec-info">
-        <div class="sec-name">${sec.name}</div>
-        <div class="sec-desc">${sec.desc}</div>
-      </div>
-      <div class="sec-right">
-        <div class="sec-pill" id="pill-${sec.id}">0 / 0</div>
-        <div class="sec-chevron">▼</div>
-      </div>`;
-    hdr.addEventListener('click', () => {
-      hdr.classList.toggle('open');
-      body.classList.toggle('open');
-    });
-
+    hdr.innerHTML = `<div class="sec-icon ${sec.ic}">${sec.icon}</div><div class="sec-info"><div class="sec-name">${sec.name}</div><div class="sec-desc">${sec.desc}</div></div><div class="sec-right"><div class="sec-pill" id="pill-${sec.id}">0 / 0</div><div class="sec-chevron">▼</div></div>`;
+    hdr.addEventListener('click', () => { hdr.classList.toggle('open'); body.classList.toggle('open'); });
     const mini = document.createElement('div');
     mini.className = 'mini-bar';
     mini.innerHTML = `<div class="mini-fill ${sec.mf}" id="mini-${sec.id}"></div>`;
-
     const body = document.createElement('div');
     body.className = 'section-body open';
-
     sec.groups.forEach(grp => {
       const lbl = document.createElement('div');
       lbl.className = 'grp-label';
       lbl.textContent = grp.label;
       body.appendChild(lbl);
-
       grp.items.forEach(item => {
         if (!(itemIdx in state[sec.id])) state[sec.id][itemIdx] = null;
         totalItems++;
         const val = state[sec.id][itemIdx];
-
         const row = document.createElement('div');
         row.className = 'check-item' + (val === true ? ' ans-yes' : val === false ? ' ans-no' : '');
-        row.innerHTML = `
-          <div class="check-text">
-            <div class="check-main">${item.t}</div>
-            ${item.h ? `<div class="check-sub">${item.h}</div>` : ''}
-          </div>
-          <div class="yn-wrap">
-            <button class="yn-btn yes${val === true  ? ' active' : ''}" data-v="yes">예</button>
-            <button class="yn-btn no ${val === false ? ' active' : ''}" data-v="no">아니오</button>
-          </div>`;
-
+        row.innerHTML = `<div class="check-text"><div class="check-main">${item.t}</div>${item.h ? `<div class="check-sub">${item.h}</div>` : ''}</div><div class="yn-wrap"><button class="yn-btn yes${val===true?' active':''}" data-v="yes">예</button><button class="yn-btn no${val===false?' active':''}" data-v="no">아니오</button></div>`;
         const idx = itemIdx;
         row.querySelectorAll('.yn-btn').forEach(btn => {
           btn.addEventListener('click', () => {
             const isYes = btn.dataset.v === 'yes';
-            const prev  = state[sec.id][idx];
-            if ((isYes && prev === true) || (!isYes && prev === false)) {
+            const prev = state[sec.id][idx];
+            if ((isYes && prev===true)||(!isYes && prev===false)) {
               state[sec.id][idx] = null;
               row.classList.remove('ans-yes','ans-no');
               row.querySelectorAll('.yn-btn').forEach(b => b.classList.remove('active'));
             } else {
               state[sec.id][idx] = isYes;
               row.classList.toggle('ans-yes', isYes);
-              row.classList.toggle('ans-no',  !isYes);
-              row.querySelector('.yn-btn.yes').classList.toggle('active',  isYes);
-              row.querySelector('.yn-btn.no' ).classList.toggle('active', !isYes);
+              row.classList.toggle('ans-no', !isYes);
+              row.querySelector('.yn-btn.yes').classList.toggle('active', isYes);
+              row.querySelector('.yn-btn.no').classList.toggle('active', !isYes);
             }
             update();
           });
         });
-
         body.appendChild(row);
         itemIdx++;
       });
     });
-
-    card.appendChild(hdr);
-    card.appendChild(mini);
-    card.appendChild(body);
+    card.appendChild(hdr); card.appendChild(mini); card.appendChild(body);
     container.appendChild(card);
   });
-
   document.getElementById('total-n').textContent = totalItems;
   document.getElementById('left-n').textContent  = totalItems;
   update();
 }
 
 function update() {
-  let allYes = 0, allAnswered = 0, allTotal = 0;
-
+  let allYes=0, allAnswered=0, allTotal=0;
   SECTIONS.forEach(sec => {
-    const vals    = Object.values(state[sec.id]);
-    const total   = vals.length;
-    const yes     = vals.filter(v => v === true).length;
-    const answered= vals.filter(v => v !== null).length;
-    allYes      += yes;
-    allAnswered += answered;
-    allTotal    += total;
-
-    const pct = total ? Math.round((yes/total)*100) : 0;
-    document.getElementById(`pill-${sec.id}`).textContent = `${yes} / ${total}`;
-    document.getElementById(`pill-${sec.id}`).classList.toggle('done', yes===total && total>0);
-    document.getElementById(`mini-${sec.id}`).style.width = pct + '%';
+    const vals=Object.values(state[sec.id]), total=vals.length;
+    const yes=vals.filter(v=>v===true).length, answered=vals.filter(v=>v!==null).length;
+    allYes+=yes; allAnswered+=answered; allTotal+=total;
+    const pct=total?Math.round((yes/total)*100):0;
+    document.getElementById(`pill-${sec.id}`).textContent=`${yes} / ${total}`;
+    document.getElementById(`pill-${sec.id}`).classList.toggle('done',yes===total&&total>0);
+    document.getElementById(`mini-${sec.id}`).style.width=pct+'%';
   });
-
-  const pct = allTotal ? Math.round((allYes/allTotal)*100) : 0;
-  document.getElementById('pct').textContent      = pct + '%';
-  document.getElementById('main-bar').style.width = pct + '%';
-  document.getElementById('done-n').textContent   = allYes;
-  document.getElementById('total-n').textContent  = allTotal;
-  document.getElementById('left-n').textContent   = allTotal - allYes;
-
-  for (let i=0;i<5;i++) document.getElementById('st'+i).classList.remove('active');
-  const si = pct>=80?4:pct>=60?3:pct>=40?2:pct>=20?1:0;
+  const pct=allTotal?Math.round((allYes/allTotal)*100):0;
+  document.getElementById('pct').textContent=pct+'%';
+  document.getElementById('main-bar').style.width=pct+'%';
+  document.getElementById('done-n').textContent=allYes;
+  document.getElementById('total-n').textContent=allTotal;
+  document.getElementById('left-n').textContent=allTotal-allYes;
+  for(let i=0;i<5;i++) document.getElementById('st'+i).classList.remove('active');
+  const si=pct>=80?4:pct>=60?3:pct>=40?2:pct>=20?1:0;
   document.getElementById('st'+si).classList.add('active');
-
-  const banner = document.getElementById('stage-banner');
-  const stg = STAGES[si];
-  banner.className = 'stage-banner show ' + stg.cls;
-  banner.textContent = stg.text;
-
-  if (allAnswered === allTotal && allTotal > 0) {
-    setTimeout(showResult, 400);
-  }
+  const stg=STAGES[si];
+  document.getElementById('stage-banner').className='stage-banner show '+stg.cls;
+  document.getElementById('stage-banner').textContent=stg.text;
+  if(allAnswered===allTotal&&allTotal>0) setTimeout(showResult,400);
 }
 
 function showResult() {
-  let allYes = 0, allTotal = 0;
-  SECTIONS.forEach(sec => {
-    const vals  = Object.values(state[sec.id]);
-    allYes   += vals.filter(v => v === true).length;
-    allTotal += vals.length;
+  let allYes=0, allTotal=0;
+  SECTIONS.forEach(sec=>{ const v=Object.values(state[sec.id]); allYes+=v.filter(x=>x===true).length; allTotal+=v.length; });
+  const allAnswered=SECTIONS.reduce((s,sec)=>s+Object.values(state[sec.id]).filter(v=>v!==null).length,0);
+  const pct=allTotal?Math.round((allYes/allTotal)*100):0;
+  const si=pct>=80?4:pct>=60?3:pct>=40?2:pct>=20?1:0, stg=STAGES[si];
+  document.getElementById('modal-score').textContent=pct+'%';
+  document.getElementById('modal-answered-info').textContent=`${allAnswered}개 답변 완료 · ${allTotal-allAnswered}개 미답변`;
+  const badge=document.getElementById('modal-badge');
+  badge.textContent=stg.badge; badge.style.background=stg.badgeBg; badge.style.color=stg.badgeColor;
+  document.getElementById('modal-stage-desc').textContent=stg.text.replace(/^.\s+/,'');
+  const rowsEl=document.getElementById('modal-rows'); rowsEl.innerHTML='';
+  const weakSecs=[];
+  SECTIONS.forEach((sec,si2)=>{
+    const vals=Object.values(state[sec.id]),total=vals.length,yes=vals.filter(v=>v===true).length;
+    const pct2=total?Math.round((yes/total)*100):0;
+    if(pct2<60) weakSecs.push(sec.id);
+    const color=SECTION_COLORS[si2];
+    rowsEl.innerHTML+=`<div class="result-row"><div class="result-row-icon">${sec.icon}</div><div class="result-row-name">${sec.name}</div><div class="result-row-bar-wrap"><div class="result-row-bar-bg"><div class="result-row-bar-fill" style="width:${pct2}%;background:${color}"></div></div><div class="result-row-pct" style="color:${color}">${pct2}%</div></div></div>`;
   });
-
-  const allAnswered = SECTIONS.reduce((s, sec) =>
-    s + Object.values(state[sec.id]).filter(v => v !== null).length, 0);
-
-  const pct = allTotal ? Math.round((allYes/allTotal)*100) : 0;
-  const si  = pct>=80?4:pct>=60?3:pct>=40?2:pct>=20?1:0;
-  const stg = STAGES[si];
-
-  document.getElementById('modal-score').textContent = pct + '%';
-  document.getElementById('modal-answered-info').textContent =
-    `${allAnswered}개 답변 완료 · ${allTotal - allAnswered}개 미답변`;
-
-  const badge = document.getElementById('modal-badge');
-  badge.textContent = stg.badge;
-  badge.style.background = stg.badgeBg;
-  badge.style.color       = stg.badgeColor;
-
-  document.getElementById('modal-stage-desc').textContent = stg.text.replace(/^.\s+/,'');
-
-  const rowsEl = document.getElementById('modal-rows');
-  rowsEl.innerHTML = '';
-  const weakSecs = [];
-  SECTIONS.forEach((sec, si2) => {
-    const vals  = Object.values(state[sec.id]);
-    const total = vals.length;
-    const yes   = vals.filter(v => v === true).length;
-    const pct2  = total ? Math.round((yes/total)*100) : 0;
-    if (pct2 < 60) weakSecs.push(sec.id);
-    const color = SECTION_COLORS[si2];
-    rowsEl.innerHTML += `
-      <div class="result-row">
-        <div class="result-row-icon">${sec.icon}</div>
-        <div class="result-row-name">${sec.name}</div>
-        <div class="result-row-bar-wrap">
-          <div class="result-row-bar-bg">
-            <div class="result-row-bar-fill" style="width:${pct2}%;background:${color}"></div>
-          </div>
-          <div class="result-row-pct" style="color:${color}">${pct2}%</div>
-        </div>
-      </div>`;
-  });
-
-  const advEl = document.getElementById('modal-advice');
-  if (weakSecs.length === 0) {
-    advEl.innerHTML = `<div class="advice-line">모든 영역이 잘 준비되어 있어요! 오늘 강의로 마지막 빈틈을 채워보세요.</div>`;
-  } else {
-    advEl.innerHTML = weakSecs.slice(0,3).map(id =>
-      `<div class="advice-line">${ADVICES[id]}</div>`
-    ).join('');
-  }
-
-  // 메모 표시
-  const memoText = document.getElementById('memo-input').value.trim();
-  const memoWrap = document.getElementById('modal-memo-wrap');
-  if (memoText) {
-    document.getElementById('modal-memo-text').textContent = memoText;
-    memoWrap.style.display = 'block';
-  } else {
-    memoWrap.style.display = 'none';
-  }
-
+  const advEl=document.getElementById('modal-advice');
+  advEl.innerHTML=weakSecs.length===0
+    ?`<div class="advice-line">모든 영역이 잘 준비되어 있어요! 오늘 강의로 마지막 빈틈을 채워보세요.</div>`
+    :weakSecs.slice(0,3).map(id=>`<div class="advice-line">${ADVICES[id]}</div>`).join('');
+  const memoText=document.getElementById('memo-input').value.trim();
+  const memoWrap=document.getElementById('modal-memo-wrap');
+  if(memoText){ document.getElementById('modal-memo-text').textContent=memoText; memoWrap.style.display='block'; }
+  else memoWrap.style.display='none';
   document.getElementById('result-modal').classList.add('show');
-  document.body.style.overflow = 'hidden';
+  document.body.style.overflow='hidden';
 }
 
-function closeResult() {
-  document.getElementById('result-modal').classList.remove('show');
-  document.body.style.overflow = '';
-}
-
-function handleOverlayClick(e) {
-  if (e.target === document.getElementById('result-modal')) closeResult();
-}
-
+function closeResult() { document.getElementById('result-modal').classList.remove('show'); document.body.style.overflow=''; }
+function handleOverlayClick(e) { if(e.target===document.getElementById('result-modal')) closeResult(); }
 function resetAll() {
-  if (!confirm('모든 답변을 초기화할까요?')) return;
-  SECTIONS.forEach(sec => {
-    Object.keys(state[sec.id]).forEach(k => { state[sec.id][k] = null; });
-  });
+  if(!confirm('모든 답변을 초기화할까요?')) return;
+  SECTIONS.forEach(sec=>{ Object.keys(state[sec.id]).forEach(k=>{state[sec.id][k]=null;}); });
   buildUI();
 }
 
-function initMemo() {
-  const ta = document.getElementById('memo-input');
-  const saved = localStorage.getItem('jr_memo');
-  if (saved) ta.value = saved;
-  ta.addEventListener('input', () => {
-    localStorage.setItem('jr_memo', ta.value);
+function submitToSheet() {
+  if(!SHEET_URL) { alert('SHEET_URL이 설정되지 않았습니다.\nindex.html 상단의 SHEET_URL에 Google Apps Script URL을 입력해주세요.'); return; }
+  const name=document.getElementById('name-input').value.trim();
+  if(!name) { alert('이름을 먼저 입력해주세요.'); document.getElementById('name-input').focus(); return; }
+  const sections={}; let allYes=0, allTotal=0;
+  SECTIONS.forEach(sec=>{
+    const vals=Object.values(state[sec.id]),total=vals.length,yes=vals.filter(v=>v===true).length;
+    sections[sec.id]=total?Math.round((yes/total)*100):0;
+    allYes+=yes; allTotal+=total;
   });
+  const totalScore=allTotal?Math.round((allYes/allTotal)*100):0;
+  const memo=document.getElementById('memo-input').value.trim();
+  const btn=document.getElementById('btn-submit'), status=document.getElementById('submit-status');
+  btn.disabled=true; btn.textContent='제출 중...'; status.className='submit-status';
+  fetch(SHEET_URL,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name,totalScore,sections,memo}) })
+  .then(()=>{ status.textContent='✅ 제출 완료! 강사님께 결과가 전달되었습니다.'; status.className='submit-status ok'; btn.textContent='✅ 제출 완료'; })
+  .catch(()=>{ status.textContent='❌ 제출 실패. 네트워크를 확인하거나 강사님께 문의하세요.'; status.className='submit-status err'; btn.disabled=false; btn.textContent='📤 강사님께 제출'; });
+}
+
+function initMemo() {
+  const ta=document.getElementById('memo-input');
+  const saved=localStorage.getItem('jr_memo');
+  if(saved) ta.value=saved;
+  ta.addEventListener('input',()=>{ localStorage.setItem('jr_memo',ta.value); });
 }
 
 buildUI();
