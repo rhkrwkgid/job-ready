@@ -150,37 +150,39 @@
 
   /* ── 체크 항목 ────────────────────────────────── */
   .check-item {
-    display:flex; align-items:flex-start; gap:12px;
-    padding:10px 18px;
+    display:flex; flex-direction:column; gap:8px;
+    padding:12px 18px;
+    border-bottom:1px solid var(--border);
     transition:background .12s;
-    position:relative;
   }
-  .check-item.ans-yes  { background:#F0FBF4; }
-  .check-item.ans-no   { background:#FDF3F2; }
+  .check-item:last-child { border-bottom:none; }
+  .check-item.ans-yes { background:#F0FBF4; }
+  .check-item.ans-no  { background:#FDF3F2; }
 
-  .check-text { flex:1; padding-top:4px; }
+  .check-text { flex:1; }
   .check-main {
-    font-size:16px; color:var(--text); line-height:1.6;
+    font-size:15px; color:var(--text); line-height:1.65;
     transition:color .2s;
   }
   .check-item.ans-yes .check-main { color:var(--green); }
-  .check-item.ans-no  .check-main { color:var(--red);   text-decoration:line-through; text-decoration-color:#E0A0A0; }
+  .check-item.ans-no  .check-main { color:#999; text-decoration:line-through; text-decoration-color:#CCC; }
   .check-sub {
-    font-size:14px; color:var(--muted);
-    margin-top:3px; line-height:1.4;
+    font-size:13px; color:var(--muted);
+    margin-top:2px; line-height:1.4;
   }
   .check-item.ans-yes .check-sub { color:#7BBFA0; }
-  .check-item.ans-no  .check-sub { color:#D0A0A0; }
+  .check-item.ans-no  .check-sub { color:#CCC; }
 
   /* 예/아니오 버튼 그룹 */
   .yn-wrap {
-    display:flex; gap:6px; flex-shrink:0; padding-top:2px;
+    display:flex; gap:8px;
   }
   .yn-btn {
     font-family:inherit; font-size:14px; font-weight:700;
-    padding:4px 12px; border-radius:6px; cursor:pointer;
+    padding:6px 0; border-radius:8px; cursor:pointer;
     border:1.5px solid var(--border); background:#fff;
-    transition:all .15s; line-height:1.5;
+    transition:all .15s; line-height:1.4;
+    flex:1; text-align:center;
   }
   .yn-btn.yes { color:var(--green); }
   .yn-btn.no  { color:var(--red); }
@@ -194,13 +196,13 @@
 
   /* 구분선 */
   .grp-label {
-    font-size:13px; font-weight:700;
+    font-size:12px; font-weight:700;
     color:var(--muted); letter-spacing:1px;
-    padding:8px 18px 4px;
+    padding:10px 18px 4px;
+    background:var(--gray-l);
     border-top:1px solid var(--border);
-    margin-top:4px;
+    border-bottom:1px solid var(--border);
   }
-  .grp-label:first-child { border-top:none; margin-top:0; }
 
   /* ── 결과 진단 카드 ───────────────────────────── */
   .result-card {
