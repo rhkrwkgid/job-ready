@@ -438,31 +438,11 @@
   <div class="result-card">
     <div class="result-title">현재 취업준비 단계</div>
     <div class="stages">
-      <div class="stage-item" id="st0">
-        <div class="stage-icon">🌱</div>
-        <div class="stage-name">시작 전</div>
-        <div class="stage-range">0~19%</div>
-      </div>
-      <div class="stage-item" id="st1">
-        <div class="stage-icon">🔍</div>
-        <div class="stage-name">탐색 중</div>
-        <div class="stage-range">20~39%</div>
-      </div>
-      <div class="stage-item" id="st2">
-        <div class="stage-icon">✏️</div>
-        <div class="stage-name">준비 중</div>
-        <div class="stage-range">40~59%</div>
-      </div>
-      <div class="stage-item" id="st3">
-        <div class="stage-icon">🚀</div>
-        <div class="stage-name">실전 진입</div>
-        <div class="stage-range">60~79%</div>
-      </div>
-      <div class="stage-item" id="st4">
-        <div class="stage-icon">🏆</div>
-        <div class="stage-name">완전 준비</div>
-        <div class="stage-range">80~100%</div>
-      </div>
+      <div class="stage-item" id="st0"><div class="stage-icon">🌱</div><div class="stage-name">시작 전</div><div class="stage-range">0~19%</div></div>
+      <div class="stage-item" id="st1"><div class="stage-icon">🔍</div><div class="stage-name">탐색 중</div><div class="stage-range">20~39%</div></div>
+      <div class="stage-item" id="st2"><div class="stage-icon">✏️</div><div class="stage-name">준비 중</div><div class="stage-range">40~59%</div></div>
+      <div class="stage-item" id="st3"><div class="stage-icon">🚀</div><div class="stage-name">실전 진입</div><div class="stage-range">60~79%</div></div>
+      <div class="stage-item" id="st4"><div class="stage-icon">🏆</div><div class="stage-name">완전 준비</div><div class="stage-range">80~100%</div></div>
     </div>
   </div>
 
@@ -505,8 +485,7 @@
 <button class="print-btn" onclick="window.print()">🖨️  인쇄하기</button>
 
 <script>
-// ★ 강사님이 여기에 Google Apps Script 웹앱 URL을 붙여넣으세요 ★
-const SHEET_URL = '';
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbx5xzLWI0yuqTyfsaocfam6R46ezUGp6eQwm3xYGBqBbx-ur8XCqtUu8l9v_iz5qEztIg/exec';
 
 const SECTIONS = [
   {
@@ -620,60 +599,44 @@ const ADVICES = {
 
 function buildUI() {
   const container = document.getElementById('content');
-  container.innerHTML = '';
-  totalItems = 0;
+  container.innerHTML = ''; totalItems = 0;
   SECTIONS.forEach(sec => {
-    state[sec.id] = state[sec.id] || {};
-    let itemIdx = 0;
-    const card = document.createElement('div');
-    card.className = 'section-card';
-    const hdr = document.createElement('div');
-    hdr.className = 'section-hdr open';
-    hdr.id = 'hdr-' + sec.id;
+    state[sec.id] = state[sec.id] || {}; let itemIdx = 0;
+    const card = document.createElement('div'); card.className = 'section-card';
+    const hdr = document.createElement('div'); hdr.className = 'section-hdr open'; hdr.id = 'hdr-' + sec.id;
     hdr.innerHTML = `<div class="sec-icon ${sec.ic}">${sec.icon}</div><div class="sec-info"><div class="sec-name">${sec.name}</div><div class="sec-desc">${sec.desc}</div></div><div class="sec-right"><div class="sec-pill" id="pill-${sec.id}">0 / 0</div><div class="sec-chevron">▼</div></div>`;
     hdr.addEventListener('click', () => { hdr.classList.toggle('open'); body.classList.toggle('open'); });
-    const mini = document.createElement('div');
-    mini.className = 'mini-bar';
+    const mini = document.createElement('div'); mini.className = 'mini-bar';
     mini.innerHTML = `<div class="mini-fill ${sec.mf}" id="mini-${sec.id}"></div>`;
-    const body = document.createElement('div');
-    body.className = 'section-body open';
+    const body = document.createElement('div'); body.className = 'section-body open';
     sec.groups.forEach(grp => {
-      const lbl = document.createElement('div');
-      lbl.className = 'grp-label';
-      lbl.textContent = grp.label;
-      body.appendChild(lbl);
+      const lbl = document.createElement('div'); lbl.className = 'grp-label'; lbl.textContent = grp.label; body.appendChild(lbl);
       grp.items.forEach(item => {
         if (!(itemIdx in state[sec.id])) state[sec.id][itemIdx] = null;
-        totalItems++;
-        const val = state[sec.id][itemIdx];
+        totalItems++; const val = state[sec.id][itemIdx];
         const row = document.createElement('div');
-        row.className = 'check-item' + (val === true ? ' ans-yes' : val === false ? ' ans-no' : '');
-        row.innerHTML = `<div class="check-text"><div class="check-main">${item.t}</div>${item.h ? `<div class="check-sub">${item.h}</div>` : ''}</div><div class="yn-wrap"><button class="yn-btn yes${val===true?' active':''}" data-v="yes">예</button><button class="yn-btn no${val===false?' active':''}" data-v="no">아니오</button></div>`;
+        row.className = 'check-item' + (val===true?' ans-yes':val===false?' ans-no':'');
+        row.innerHTML = `<div class="check-text"><div class="check-main">${item.t}</div>${item.h?`<div class="check-sub">${item.h}</div>`:''}</div><div class="yn-wrap"><button class="yn-btn yes${val===true?' active':''}" data-v="yes">예</button><button class="yn-btn no${val===false?' active':''}" data-v="no">아니오</button></div>`;
         const idx = itemIdx;
         row.querySelectorAll('.yn-btn').forEach(btn => {
           btn.addEventListener('click', () => {
-            const isYes = btn.dataset.v === 'yes';
-            const prev = state[sec.id][idx];
-            if ((isYes && prev===true)||(!isYes && prev===false)) {
-              state[sec.id][idx] = null;
-              row.classList.remove('ans-yes','ans-no');
-              row.querySelectorAll('.yn-btn').forEach(b => b.classList.remove('active'));
+            const isYes = btn.dataset.v==='yes', prev = state[sec.id][idx];
+            if ((isYes&&prev===true)||(!isYes&&prev===false)) {
+              state[sec.id][idx]=null; row.classList.remove('ans-yes','ans-no');
+              row.querySelectorAll('.yn-btn').forEach(b=>b.classList.remove('active'));
             } else {
-              state[sec.id][idx] = isYes;
-              row.classList.toggle('ans-yes', isYes);
-              row.classList.toggle('ans-no', !isYes);
-              row.querySelector('.yn-btn.yes').classList.toggle('active', isYes);
-              row.querySelector('.yn-btn.no').classList.toggle('active', !isYes);
+              state[sec.id][idx]=isYes;
+              row.classList.toggle('ans-yes',isYes); row.classList.toggle('ans-no',!isYes);
+              row.querySelector('.yn-btn.yes').classList.toggle('active',isYes);
+              row.querySelector('.yn-btn.no').classList.toggle('active',!isYes);
             }
             update();
           });
         });
-        body.appendChild(row);
-        itemIdx++;
+        body.appendChild(row); itemIdx++;
       });
     });
-    card.appendChild(hdr); card.appendChild(mini); card.appendChild(body);
-    container.appendChild(card);
+    card.appendChild(hdr); card.appendChild(mini); card.appendChild(body); container.appendChild(card);
   });
   document.getElementById('total-n').textContent = totalItems;
   document.getElementById('left-n').textContent  = totalItems;
@@ -681,10 +644,10 @@ function buildUI() {
 }
 
 function update() {
-  let allYes=0, allAnswered=0, allTotal=0;
-  SECTIONS.forEach(sec => {
-    const vals=Object.values(state[sec.id]), total=vals.length;
-    const yes=vals.filter(v=>v===true).length, answered=vals.filter(v=>v!==null).length;
+  let allYes=0,allAnswered=0,allTotal=0;
+  SECTIONS.forEach(sec=>{
+    const vals=Object.values(state[sec.id]),total=vals.length;
+    const yes=vals.filter(v=>v===true).length,answered=vals.filter(v=>v!==null).length;
     allYes+=yes; allAnswered+=answered; allTotal+=total;
     const pct=total?Math.round((yes/total)*100):0;
     document.getElementById(`pill-${sec.id}`).textContent=`${yes} / ${total}`;
@@ -698,17 +661,16 @@ function update() {
   document.getElementById('total-n').textContent=allTotal;
   document.getElementById('left-n').textContent=allTotal-allYes;
   for(let i=0;i<5;i++) document.getElementById('st'+i).classList.remove('active');
-  const si=pct>=80?4:pct>=60?3:pct>=40?2:pct>=20?1:0;
+  const si=pct>=80?4:pct>=60?3:pct>=40?2:pct>=20?1:0, stg=STAGES[si];
   document.getElementById('st'+si).classList.add('active');
-  const stg=STAGES[si];
   document.getElementById('stage-banner').className='stage-banner show '+stg.cls;
   document.getElementById('stage-banner').textContent=stg.text;
   if(allAnswered===allTotal&&allTotal>0) setTimeout(showResult,400);
 }
 
 function showResult() {
-  let allYes=0, allTotal=0;
-  SECTIONS.forEach(sec=>{ const v=Object.values(state[sec.id]); allYes+=v.filter(x=>x===true).length; allTotal+=v.length; });
+  let allYes=0,allTotal=0;
+  SECTIONS.forEach(sec=>{const v=Object.values(state[sec.id]);allYes+=v.filter(x=>x===true).length;allTotal+=v.length;});
   const allAnswered=SECTIONS.reduce((s,sec)=>s+Object.values(state[sec.id]).filter(v=>v!==null).length,0);
   const pct=allTotal?Math.round((allYes/allTotal)*100):0;
   const si=pct>=80?4:pct>=60?3:pct>=40?2:pct>=20?1:0, stg=STAGES[si];
@@ -721,55 +683,49 @@ function showResult() {
   const weakSecs=[];
   SECTIONS.forEach((sec,si2)=>{
     const vals=Object.values(state[sec.id]),total=vals.length,yes=vals.filter(v=>v===true).length;
-    const pct2=total?Math.round((yes/total)*100):0;
-    if(pct2<60) weakSecs.push(sec.id);
+    const pct2=total?Math.round((yes/total)*100):0; if(pct2<60) weakSecs.push(sec.id);
     const color=SECTION_COLORS[si2];
     rowsEl.innerHTML+=`<div class="result-row"><div class="result-row-icon">${sec.icon}</div><div class="result-row-name">${sec.name}</div><div class="result-row-bar-wrap"><div class="result-row-bar-bg"><div class="result-row-bar-fill" style="width:${pct2}%;background:${color}"></div></div><div class="result-row-pct" style="color:${color}">${pct2}%</div></div></div>`;
   });
   const advEl=document.getElementById('modal-advice');
-  advEl.innerHTML=weakSecs.length===0
-    ?`<div class="advice-line">모든 영역이 잘 준비되어 있어요! 오늘 강의로 마지막 빈틈을 채워보세요.</div>`
-    :weakSecs.slice(0,3).map(id=>`<div class="advice-line">${ADVICES[id]}</div>`).join('');
+  advEl.innerHTML=weakSecs.length===0?`<div class="advice-line">모든 영역이 잘 준비되어 있어요! 오늘 강의로 마지막 빈틈을 채워보세요.</div>`:weakSecs.slice(0,3).map(id=>`<div class="advice-line">${ADVICES[id]}</div>`).join('');
   const memoText=document.getElementById('memo-input').value.trim();
   const memoWrap=document.getElementById('modal-memo-wrap');
-  if(memoText){ document.getElementById('modal-memo-text').textContent=memoText; memoWrap.style.display='block'; }
-  else memoWrap.style.display='none';
+  if(memoText){document.getElementById('modal-memo-text').textContent=memoText;memoWrap.style.display='block';}else memoWrap.style.display='none';
   document.getElementById('result-modal').classList.add('show');
   document.body.style.overflow='hidden';
 }
 
-function closeResult() { document.getElementById('result-modal').classList.remove('show'); document.body.style.overflow=''; }
-function handleOverlayClick(e) { if(e.target===document.getElementById('result-modal')) closeResult(); }
-function resetAll() {
+function closeResult(){document.getElementById('result-modal').classList.remove('show');document.body.style.overflow='';}
+function handleOverlayClick(e){if(e.target===document.getElementById('result-modal'))closeResult();}
+function resetAll(){
   if(!confirm('모든 답변을 초기화할까요?')) return;
-  SECTIONS.forEach(sec=>{ Object.keys(state[sec.id]).forEach(k=>{state[sec.id][k]=null;}); });
+  SECTIONS.forEach(sec=>{Object.keys(state[sec.id]).forEach(k=>{state[sec.id][k]=null;});});
   buildUI();
 }
 
-function submitToSheet() {
-  if(!SHEET_URL) { alert('SHEET_URL이 설정되지 않았습니다.\nindex.html 상단의 SHEET_URL에 Google Apps Script URL을 입력해주세요.'); return; }
+function submitToSheet(){
   const name=document.getElementById('name-input').value.trim();
-  if(!name) { alert('이름을 먼저 입력해주세요.'); document.getElementById('name-input').focus(); return; }
-  const sections={}; let allYes=0, allTotal=0;
+  if(!name){alert('이름을 먼저 입력해주세요.');document.getElementById('name-input').focus();return;}
+  const sections={}; let allYes=0,allTotal=0;
   SECTIONS.forEach(sec=>{
     const vals=Object.values(state[sec.id]),total=vals.length,yes=vals.filter(v=>v===true).length;
-    sections[sec.id]=total?Math.round((yes/total)*100):0;
-    allYes+=yes; allTotal+=total;
+    sections[sec.id]=total?Math.round((yes/total)*100):0; allYes+=yes; allTotal+=total;
   });
   const totalScore=allTotal?Math.round((allYes/allTotal)*100):0;
   const memo=document.getElementById('memo-input').value.trim();
-  const btn=document.getElementById('btn-submit'), status=document.getElementById('submit-status');
+  const btn=document.getElementById('btn-submit'),status=document.getElementById('submit-status');
   btn.disabled=true; btn.textContent='제출 중...'; status.className='submit-status';
-  fetch(SHEET_URL,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name,totalScore,sections,memo}) })
-  .then(()=>{ status.textContent='✅ 제출 완료! 강사님께 결과가 전달되었습니다.'; status.className='submit-status ok'; btn.textContent='✅ 제출 완료'; })
-  .catch(()=>{ status.textContent='❌ 제출 실패. 네트워크를 확인하거나 강사님께 문의하세요.'; status.className='submit-status err'; btn.disabled=false; btn.textContent='📤 강사님께 제출'; });
+  fetch(SHEET_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,totalScore,sections,memo})})
+  .then(()=>{status.textContent='✅ 제출 완료! 강사님께 결과가 전달되었습니다.';status.className='submit-status ok';btn.textContent='✅ 제출 완료';})
+  .catch(()=>{status.textContent='❌ 제출 실패. 네트워크를 확인하거나 강사님께 문의하세요.';status.className='submit-status err';btn.disabled=false;btn.textContent='📤 강사님께 제출';});
 }
 
-function initMemo() {
+function initMemo(){
   const ta=document.getElementById('memo-input');
   const saved=localStorage.getItem('jr_memo');
   if(saved) ta.value=saved;
-  ta.addEventListener('input',()=>{ localStorage.setItem('jr_memo',ta.value); });
+  ta.addEventListener('input',()=>{localStorage.setItem('jr_memo',ta.value);});
 }
 
 buildUI();
